@@ -225,22 +225,24 @@ def get_output_dir(work_dir: str = None) -> str:
     获取输出目录。
     
     优先级:
-    1. 当前工作目录下的 output/
-    2. Skill 目录下的 output/
+    1. 当前工作目录下的 output/（用户在项目中使用时）
+    2. ~/Pictures/qwen-image-generator/（保底，跨平台统一）
     
     Args:
-        work_dir: 工作目录（可选）
+        work_dir: 工作目录（可选，默认使用 cwd）
     
     Returns:
         str: 输出目录路径
     """
-    if work_dir:
-        output_dir = Path(work_dir) / "output"
-    else:
-        output_dir = Path.cwd() / "output"
+    cwd_output = Path(work_dir) / "output" if work_dir else Path.cwd() / "output"
+    fallback_output = Path.home() / "Pictures" / "qwen-image-generator"
     
-    output_dir.mkdir(parents=True, exist_ok=True)
-    return str(output_dir)
+    try:
+        cwd_output.mkdir(parents=True, exist_ok=True)
+        return str(cwd_output)
+    except (PermissionError, OSError):
+        fallback_output.mkdir(parents=True, exist_ok=True)
+        return str(fallback_output)
 
 
 if __name__ == "__main__":

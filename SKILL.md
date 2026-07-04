@@ -182,8 +182,12 @@ python scripts/wan_image_gen.py text2img "小猫的一天" --n 3   --filename_pr
 #### 保存位置
 
 **优先级**：
-1. 当前工作目录下的 `output/` 目录
-2. Skill 目录下的 `output/` 目录（保底）
+1. 当前工作目录下的 `output/` 目录（用户在项目中调用时，图片保存在项目内）
+2. `~/Pictures/qwen-image-generator/`（保底，跨平台统一位置）
+
+> macOS: `~/Pictures/qwen-image-generator/`
+> Windows: `C:\Users\<用户名>\Pictures\qwen-image-generator\`（自动检测用户名）
+> Linux: `~/Pictures/qwen-image-generator/`
 
 ## 对比模式
 
@@ -216,9 +220,10 @@ python scripts/wan_image_gen.py text2img "小猫的一天" --n 3   --filename_pr
 ## 使用工具函数
 
 ```python
-# 导入工具函数
-import sys
-sys.path.insert(0, '/Users/wzt/.codex/skills/qwen-image-generator/scripts')
+# 导入工具函数（使用 Skill 的 scripts/ 目录的相对路径）
+import sys, os
+scripts_dir = os.path.join(os.path.dirname(__file__), 'scripts')
+sys.path.insert(0, scripts_dir)
 from image_utils import (
     compress_image,
     image_to_base64,
@@ -234,8 +239,8 @@ image_data = prepare_image_input("path/to/image.jpg", target_model="qwen-image-2
 # 生成文件名
 filename = generate_filename("一只可爱的橘猫", scene="窗台", style="温暖治愈")
 
-# 获取输出目录
-output_dir = get_output_dir("/current/working/dir")
+# 获取输出目录（优先当前工作目录，保底 ~/Pictures/qwen-image-generator/）
+output_dir = get_output_dir()
 ```
 
 ## 环境变量

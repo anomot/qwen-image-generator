@@ -63,8 +63,15 @@ class WanImageGenerator:
             dashscope.base_http_api_url = f'https://{workspace}.cn-beijing.maas.aliyuncs.com/api/v1'
         
         # 创建输出目录
-        self.output_dir = Path(__file__).parent / "output"
-        self.output_dir.mkdir(exist_ok=True)
+        # 优先级：1. 当前工作目录下的 output/  2. ~/Pictures/qwen-image-generator/（保底）
+        cwd_output = Path.cwd() / "output"
+        fallback_output = Path.home() / "Pictures" / "qwen-image-generator"
+        try:
+            cwd_output.mkdir(exist_ok=True)
+            self.output_dir = cwd_output
+        except (PermissionError, OSError):
+            fallback_output.mkdir(parents=True, exist_ok=True)
+            self.output_dir = fallback_output
     
     def text_to_image(
         self,
