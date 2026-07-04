@@ -269,6 +269,7 @@ class WanImageGenerator:
         prompts: List[str],
         model: str = "pro",
         size: str = "2k",
+        seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
     ) -> dict:
         """
@@ -296,7 +297,7 @@ class WanImageGenerator:
         print("⏳ 生成中，请稍候...")
         
         try:
-            response = ImageGeneration.call(
+            call_kwargs = dict(
                 model=model_name,
                 api_key=self.api_key,
                 messages=[message],
@@ -304,6 +305,9 @@ class WanImageGenerator:
                 n=len(prompts),
                 size=size_value
             )
+            if seed is not None:
+                call_kwargs["seed"] = seed
+            response = ImageGeneration.call(**call_kwargs)
             
             return self._process_response(response, "story", filename_prefix)
             

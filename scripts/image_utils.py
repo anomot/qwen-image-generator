@@ -71,7 +71,7 @@ def compress_image(input_path: str, target_size_mb: float = 9.5, output_path: st
     if max(w, h) > max_dim:
         ratio = max_dim / max(w, h)
         new_size = (int(w * ratio), int(h * ratio))
-        img_resized = img.resize(new_size, Image.LANCZOS)
+        img_resized = img.resize(new_size, Image.Resampling.LANCZOS)
         
         for quality in [85, 70, 50]:
             img_resized.save(output_path, 'JPEG', quality=quality)

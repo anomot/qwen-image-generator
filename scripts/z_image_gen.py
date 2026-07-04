@@ -3,8 +3,8 @@
 Z-Image-Turbo Generation Script
 支持使用 z-image-turbo 模型进行：
 - 文生图 (Text-to-Image)
-- 图生图 (Image-to-Image)
-- 图片编辑 (Image Editing)
+
+注：z-image-turbo 不支持图生图和图片编辑，需要这些功能请使用 wan2.7 或 qwen-image-2.0
 
 特点：
 - 超高速生成（速度优先）

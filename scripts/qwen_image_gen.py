@@ -223,6 +223,7 @@ class QwenImage20Generator:
         n: int = 1,
         size: str = "1k",
         negative_prompt: Optional[str] = None,
+        seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
     ) -> dict:
         """
@@ -235,6 +236,7 @@ class QwenImage20Generator:
             n: 生成图片数量
             size: 输出图片尺寸
             negative_prompt: 负向提示词
+            seed: 随机种子
             filename_prefix: 文件名前缀
         
         Returns:
@@ -244,6 +246,7 @@ class QwenImage20Generator:
         return self.image_to_image(
             prompt, image_path, model=model, n=n, size=size,
             negative_prompt=negative_prompt,
+            seed=seed,
             filename_prefix=filename_prefix
         )
     
@@ -254,6 +257,7 @@ class QwenImage20Generator:
         model: str = "default",
         n: int = 1,
         size: str = "2k",
+        seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
     ) -> dict:
         """
