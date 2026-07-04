@@ -14,7 +14,7 @@
 | **消息格式** | `Message` 对象 + `content` 列表 | 原生 dict `messages` 列表 | 原生 dict `messages` 列表 |
 | **模型系列** | 通义万相 (Wan) | Qwen 视觉多模态 | Z-Image Turbo |
 | **发布时间** | 2026 (较新) | 2026 (较新) | 2026 (较新) |
-| **脚本路径** | `wan-image-gen/` | `qwen-image-2.0-gen/` | `z-image-turbo-gen/` |
+| **脚本路径** | `scripts/wan_image_gen.py` | `scripts/qwen_image_gen.py` | `scripts/z_image_gen.py` |
 
 ---
 

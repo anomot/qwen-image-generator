@@ -88,6 +88,7 @@ class QwenImage20Generator:
         size: str = "1k",
         watermark: bool = False,
         negative_prompt: Optional[str] = None,
+        seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
     ) -> dict:
         """
@@ -111,11 +112,7 @@ class QwenImage20Generator:
         content = []
         
         # 添加文本提示
-        text_content = prompt
-        if negative_prompt:
-            text_content += f"\n\n负面提示: {negative_prompt}"
-        
-        content.append({"text": text_content})
+        content.append({"text": prompt})
         
         messages = [
             {
@@ -138,7 +135,8 @@ class QwenImage20Generator:
                 n=n,
                 size=size_value,
                 watermark=watermark,
-                negative_prompt=negative_prompt if negative_prompt else ""
+                negative_prompt=negative_prompt if negative_prompt else "",
+                **({"seed": seed} if seed is not None else {})
             )
             
             return self._process_response(response, "text2img", filename_prefix)
@@ -153,7 +151,9 @@ class QwenImage20Generator:
         image_path: str,
         model: str = "default",
         n: int = 1,
-        size: str = "2k",
+        size: str = "1k",
+        negative_prompt: Optional[str] = None,
+        seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
     ) -> dict:
         """
@@ -165,6 +165,8 @@ class QwenImage20Generator:
             model: 模型选择
             n: 生成图片数量
             size: 输出图片尺寸
+            negative_prompt: 负向提示词
+            filename_prefix: 文件名前缀
         
         Returns:
             dict: 包含生成结果和保存路径的字典
@@ -203,7 +205,8 @@ class QwenImage20Generator:
                 n=n,
                 size=size_value,
                 watermark=False,
-                negative_prompt=""
+                negative_prompt=negative_prompt if negative_prompt else "",
+                **({"seed": seed} if seed is not None else {})
             )
             
             return self._process_response(response, "img2img", filename_prefix)
@@ -218,7 +221,8 @@ class QwenImage20Generator:
         image_path: str,
         model: str = "default",
         n: int = 1,
-        size: str = "2k",
+        size: str = "1k",
+        negative_prompt: Optional[str] = None,
         filename_prefix: Optional[str] = None
     ) -> dict:
         """
@@ -230,12 +234,18 @@ class QwenImage20Generator:
             model: 模型选择
             n: 生成图片数量
             size: 输出图片尺寸
+            negative_prompt: 负向提示词
+            filename_prefix: 文件名前缀
         
         Returns:
             dict: 包含生成结果和保存路径的字典
         """
         # 编辑本质上是图生图的一种形式
-        return self.image_to_image(prompt, image_path, model, n, size)
+        return self.image_to_image(
+            prompt, image_path, model=model, n=n, size=size,
+            negative_prompt=negative_prompt,
+            filename_prefix=filename_prefix
+        )
     
     def multi_image_fusion(
         self,
@@ -464,6 +474,7 @@ def main():
     p_t2i.add_argument("--n", type=int, default=1, help="生成数量 1-6 (默认: 1)")
     p_t2i.add_argument("--size", default="1k", help="尺寸: 2k/1k/512/portrait/landscape/square (默认: 1k)")
     p_t2i.add_argument("--negative-prompt", default=None, help="负向提示词")
+    p_t2i.add_argument("--seed", type=int, default=None, help="随机种子")
     p_t2i.add_argument("--filename-prefix", default=None, help="文件名前缀（如：春日海报_花朵）")
     
     # img2img
@@ -473,6 +484,7 @@ def main():
     p_i2i.add_argument("--n", type=int, default=1)
     p_i2i.add_argument("--size", default="1k")
     p_i2i.add_argument("--negative-prompt", default=None)
+    p_i2i.add_argument("--seed", type=int, default=None)
     p_i2i.add_argument("--filename-prefix", default=None)
     
     # edit
@@ -482,6 +494,7 @@ def main():
     p_edit.add_argument("--n", type=int, default=1)
     p_edit.add_argument("--size", default="1k")
     p_edit.add_argument("--negative-prompt", default=None)
+    p_edit.add_argument("--seed", type=int, default=None)
     p_edit.add_argument("--filename-prefix", default=None)
     
     # multi
@@ -490,6 +503,7 @@ def main():
     p_multi.add_argument("images", nargs="+", help="输入图片路径或URL（至少2张）")
     p_multi.add_argument("--n", type=int, default=1)
     p_multi.add_argument("--size", default="1k")
+    p_multi.add_argument("--seed", type=int, default=None)
     p_multi.add_argument("--filename-prefix", default=None)
     
     args = parser.parse_args()
@@ -509,18 +523,21 @@ def main():
         result = generator.text_to_image(
             args.prompt, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
+            seed=args.seed,
             filename_prefix=prefix
         )
     elif args.command == "img2img":
         result = generator.image_to_image(
             args.prompt, args.image, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
+            seed=args.seed,
             filename_prefix=prefix
         )
     elif args.command == "edit":
         result = generator.edit_image(
             args.prompt, args.image, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
+            seed=args.seed,
             filename_prefix=prefix
         )
     elif args.command == "multi":
@@ -529,6 +546,7 @@ def main():
             sys.exit(1)
         result = generator.multi_image_fusion(
             args.prompt, args.images, n=args.n, size=args.size,
+            seed=args.seed,
             filename_prefix=prefix
         )
     else:

@@ -38,7 +38,7 @@ class WanImageGenerator:
     # 支持的尺寸
     SIZES = {
         "1k": "1024*1024",
-        "2k": "2K",
+        "2k": "2048*2048",
         "portrait": "768*1152",
         "landscape": "1152*768",
         "square": "1024*1024"
@@ -81,6 +81,7 @@ class WanImageGenerator:
         size: str = "1k",
         enable_sequential: bool = False,
         negative_prompt: Optional[str] = None,
+        seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
     ) -> dict:
         """
@@ -104,20 +105,18 @@ class WanImageGenerator:
         content = []
         
         # 添加文本提示
-        text_content = prompt
-        if negative_prompt:
-            text_content += f"\n\n负面提示: {negative_prompt}"
-        
-        content.append({"text": text_content})
+        content.append({"text": prompt})
         
         message = Message(role="user", content=content)
         
         print(f"🎨 文生图 - 模型: {model_name}, 数量: {n}, 尺寸: {size_value}")
         print(f"📝 提示词: {prompt[:100]}{'...' if len(prompt) > 100 else ''}")
+        if negative_prompt:
+            print(f"🚫 负向提示词: {negative_prompt[:50]}")
         print("⏳ 生成中，请稍候...")
         
         try:
-            response = ImageGeneration.call(
+            call_kwargs = dict(
                 model=model_name,
                 api_key=self.api_key,
                 messages=[message],
@@ -125,6 +124,11 @@ class WanImageGenerator:
                 n=n,
                 size=size_value
             )
+            if negative_prompt:
+                call_kwargs["negative_prompt"] = negative_prompt
+            if seed is not None:
+                call_kwargs["seed"] = seed
+            response = ImageGeneration.call(**call_kwargs)
             
             return self._process_response(response, "text2img", filename_prefix)
             
@@ -138,7 +142,10 @@ class WanImageGenerator:
         image_path: str,
         model: str = "pro",
         n: int = 1,
-        size: str = "1k"
+        size: str = "1k",
+        negative_prompt: Optional[str] = None,
+        seed: Optional[int] = None,
+        filename_prefix: Optional[str] = None
     ) -> dict:
         """
         图生图：基于输入图片和文本描述生成新图片
@@ -149,6 +156,8 @@ class WanImageGenerator:
             model: 模型选择，"pro" 或 "std"
             n: 生成图片数量
             size: 输出图片尺寸
+            negative_prompt: 负向提示词
+            filename_prefix: 文件名前缀
         
         Returns:
             dict: 包含生成结果和保存路径的字典
@@ -173,13 +182,18 @@ class WanImageGenerator:
         print("⏳ 生成中，请稍候...")
         
         try:
-            response = ImageGeneration.call(
+            call_kwargs = dict(
                 model=model_name,
                 api_key=self.api_key,
                 messages=[message],
                 n=n,
                 size=size_value
             )
+            if negative_prompt:
+                call_kwargs["negative_prompt"] = negative_prompt
+            if seed is not None:
+                call_kwargs["seed"] = seed
+            response = ImageGeneration.call(**call_kwargs)
             
             return self._process_response(response, "img2img", filename_prefix)
             
@@ -193,7 +207,10 @@ class WanImageGenerator:
         image_path: str,
         model: str = "pro",
         n: int = 1,
-        size: str = "1k"
+        size: str = "1k",
+        negative_prompt: Optional[str] = None,
+        seed: Optional[int] = None,
+        filename_prefix: Optional[str] = None
     ) -> dict:
         """
         图片编辑：对输入图片进行编辑修改
@@ -204,6 +221,8 @@ class WanImageGenerator:
             model: 模型选择，"pro" 或 "std"
             n: 生成图片数量
             size: 输出图片尺寸
+            negative_prompt: 负向提示词
+            filename_prefix: 文件名前缀
         
         Returns:
             dict: 包含生成结果和保存路径的字典
@@ -228,13 +247,16 @@ class WanImageGenerator:
         print("⏳ 生成中，请稍候...")
         
         try:
-            response = ImageGeneration.call(
+            call_kwargs = dict(
                 model=model_name,
                 api_key=self.api_key,
                 messages=[message],
                 n=n,
                 size=size_value
             )
+            if negative_prompt:
+                call_kwargs["negative_prompt"] = negative_prompt
+            response = ImageGeneration.call(**call_kwargs)
             
             return self._process_response(response, "edit", filename_prefix)
             
@@ -246,7 +268,8 @@ class WanImageGenerator:
         self,
         prompts: List[str],
         model: str = "pro",
-        size: str = "2k"
+        size: str = "2k",
+        filename_prefix: Optional[str] = None
     ) -> dict:
         """
         组图生成：生成一组相关的图片（如四季主题）
@@ -442,6 +465,7 @@ def main():
     p_t2i.add_argument("--size", default="1k", help="尺寸: 1k/2k/portrait/landscape/square (默认: 1k)")
     p_t2i.add_argument("--enable-sequential", action="store_true", help="启用顺序生成（组图用）")
     p_t2i.add_argument("--negative-prompt", default=None, help="负向提示词")
+    p_t2i.add_argument("--seed", type=int, default=None, help="随机种子")
     p_t2i.add_argument("--filename-prefix", default=None, help="文件名前缀（如：可爱橘猫_窗台）")
     
     # img2img
@@ -452,6 +476,7 @@ def main():
     p_i2i.add_argument("--n", type=int, default=1)
     p_i2i.add_argument("--size", default="1k")
     p_i2i.add_argument("--negative-prompt", default=None)
+    p_i2i.add_argument("--seed", type=int, default=None)
     p_i2i.add_argument("--filename-prefix", default=None)
     
     # edit
@@ -462,6 +487,7 @@ def main():
     p_edit.add_argument("--n", type=int, default=1)
     p_edit.add_argument("--size", default="1k")
     p_edit.add_argument("--negative-prompt", default=None)
+    p_edit.add_argument("--seed", type=int, default=None)
     p_edit.add_argument("--filename-prefix", default=None)
     
     # story
@@ -469,6 +495,7 @@ def main():
     p_story.add_argument("theme", help="故事主题")
     p_story.add_argument("--model", default="pro", choices=["pro", "std"])
     p_story.add_argument("--size", default="2k")
+    p_story.add_argument("--seed", type=int, default=None)
     p_story.add_argument("--filename-prefix", default=None)
     
     args = parser.parse_args()
@@ -489,12 +516,14 @@ def main():
             args.prompt, model=args.model, n=args.n, size=args.size,
             enable_sequential=args.enable_sequential,
             negative_prompt=args.negative_prompt,
+            seed=args.seed,
             filename_prefix=prefix
         )
     elif args.command == "img2img":
         result = generator.image_to_image(
             args.prompt, args.image, model=args.model, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
+            seed=args.seed,
             filename_prefix=prefix
         )
     elif args.command == "edit":
@@ -504,8 +533,9 @@ def main():
             filename_prefix=prefix
         )
     elif args.command == "story":
-        result = generator.story_generation(
-            args.theme, model=args.model, size=args.size,
+        result = generator.generate_story_images(
+            [args.theme], model=args.model, size=args.size,
+            seed=args.seed,
             filename_prefix=prefix
         )
     else:

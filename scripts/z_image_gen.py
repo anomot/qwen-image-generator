@@ -82,9 +82,10 @@ class ZImageTurboGenerator:
         prompt: str,
         model: str = "default",
         n: int = 1,
-        size: str = "portrait",
+        size: str = "1k",
         prompt_extend: bool = False,
         negative_prompt: Optional[str] = None,
+        seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
     ) -> dict:
         """
@@ -129,10 +130,6 @@ class ZImageTurboGenerator:
                 prompt_extend=prompt_extend
             )
             
-            # 尝试将 size 作为额外参数传递
-            # 如果 SDK 不支持，可能需要使用 HTTP API
-            # 这里先用 SDK 测试
-            
             return self._process_response(response, "text2img", filename_prefix)
             
         except Exception as e:
@@ -145,7 +142,8 @@ class ZImageTurboGenerator:
         image_path: str,
         model: str = "default",
         n: int = 1,
-        size: str = "portrait"
+        size: str = "portrait",
+        filename_prefix: Optional[str] = None
     ) -> dict:
         """
         图生图：基于输入图片和文本描述生成新图片
@@ -156,6 +154,7 @@ class ZImageTurboGenerator:
             model: 模型选择
             n: 生成图片数量
             size: 输出图片尺寸
+            filename_prefix: 文件名前缀
         
         Returns:
             dict: 包含生成结果和保存路径的字典
@@ -399,6 +398,7 @@ def main():
     p_t2i.add_argument("--n", type=int, default=1, help="生成数量 1-4 (默认: 1)")
     p_t2i.add_argument("--size", default="1k", help="尺寸: 1k/portrait/landscape/square/hd (默认: 1k)")
     p_t2i.add_argument("--negative-prompt", default=None, help="负向提示词")
+    p_t2i.add_argument("--seed", type=int, default=None, help="随机种子")
     p_t2i.add_argument("--filename-prefix", default=None, help="文件名前缀")
     
     # img2img (not supported)
@@ -433,6 +433,7 @@ def main():
         result = generator.text_to_image(
             args.prompt, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
+            seed=args.seed,
             filename_prefix=prefix
         )
     else:
