@@ -79,6 +79,8 @@ class ZImageTurboGenerator(BaseImageGenerator):
             )
             if seed is not None:
                 call_kwargs["seed"] = seed
+            if negative_prompt:
+                call_kwargs["negative_prompt"] = negative_prompt
             
             response = self._call_api_with_retry(MultiModalConversation.call, **call_kwargs)
             
