@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """
 Qwen Image 2.0 Generation Script
-支持使用 qwen-image-2.0 模型进行：
+支持使用 qwen-image-2.0 系列模型进行：
 - 文生图 (Text-to-Image)
 - 图生图 (Image-to-Image)  
 - 图片编辑 (Image Editing)
 - 多图融合 (Multi-Image Fusion)
+
+支持模型：
+- default (qwen-image-2.0) — 加速版，效果与性能平衡
+- pro (qwen-image-2.0-pro-2026-06-22) — 满血版，最强文字渲染 + 细腻质感
 
 特点：
 - 原生 2K 分辨率（最高 2048*2048）
@@ -35,7 +39,8 @@ class QwenImage20Generator(BaseImageGenerator):
     """Qwen Image 2.0 图片生成器"""
     
     MODELS = {
-        "default": "qwen-image-2.0"
+        "default": "qwen-image-2.0",
+        "pro": "qwen-image-2.0-pro-2026-06-22"
     }
     
     SIZES = {
@@ -262,6 +267,7 @@ def main():
     p_t2i.add_argument("--size", default="1k", help="尺寸: 2k/1k/512/portrait/landscape/square (默认: 1k)")
     p_t2i.add_argument("--negative-prompt", default=None, help="负向提示词")
     p_t2i.add_argument("--seed", type=int, default=None, help="随机种子")
+    p_t2i.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版 (默认: default)")
     p_t2i.add_argument("--watermark", action="store_true", help="添加水印（默认关闭）")
     p_t2i.add_argument("--filename-prefix", default=None, help="文件名前缀（如：春日海报_花朵）")
     
@@ -269,6 +275,7 @@ def main():
     p_i2i = subparsers.add_parser("img2img", help="图生图")
     p_i2i.add_argument("prompt", help="提示词")
     p_i2i.add_argument("image", help="输入图片路径或URL")
+    p_i2i.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版")
     p_i2i.add_argument("--n", type=int, default=1)
     p_i2i.add_argument("--size", default="1k")
     p_i2i.add_argument("--negative-prompt", default=None)
@@ -279,6 +286,7 @@ def main():
     p_edit = subparsers.add_parser("edit", help="图片编辑")
     p_edit.add_argument("prompt", help="编辑指令")
     p_edit.add_argument("image", help="输入图片路径或URL")
+    p_edit.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版")
     p_edit.add_argument("--n", type=int, default=1)
     p_edit.add_argument("--size", default="1k")
     p_edit.add_argument("--negative-prompt", default=None)
@@ -289,6 +297,7 @@ def main():
     p_multi = subparsers.add_parser("multi", help="多图融合")
     p_multi.add_argument("prompt", help="融合描述")
     p_multi.add_argument("images", nargs="+", help="输入图片路径或URL（至少2张）")
+    p_multi.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版")
     p_multi.add_argument("--n", type=int, default=1)
     p_multi.add_argument("--size", default="1k")
     p_multi.add_argument("--seed", type=int, default=None)
@@ -309,7 +318,7 @@ def main():
     
     if args.command == "text2img":
         result = generator.text_to_image(
-            args.prompt, n=args.n, size=args.size,
+            args.prompt, model=args.model, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
             seed=args.seed,
             watermark=args.watermark,
@@ -317,14 +326,14 @@ def main():
         )
     elif args.command == "img2img":
         result = generator.image_to_image(
-            args.prompt, args.image, n=args.n, size=args.size,
+            args.prompt, args.image, model=args.model, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
             seed=args.seed,
             filename_prefix=prefix
         )
     elif args.command == "edit":
         result = generator.edit_image(
-            args.prompt, args.image, n=args.n, size=args.size,
+            args.prompt, args.image, model=args.model, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
             seed=args.seed,
             filename_prefix=prefix
@@ -334,7 +343,7 @@ def main():
             print("❌ 多图融合至少需要 2 张图片")
             sys.exit(1)
         result = generator.multi_image_fusion(
-            args.prompt, args.images, n=args.n, size=args.size,
+            args.prompt, args.images, model=args.model, n=args.n, size=args.size,
             seed=args.seed,
             filename_prefix=prefix
         )

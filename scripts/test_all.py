@@ -144,6 +144,18 @@ def test_method_signatures():
             print(f"  ❌ QwenImage20Generator.multi_image_fusion 参数不完整")
             all_pass = False
     
+    # 检查 QwenImage20Generator.MODELS 是否包含 pro
+    if hasattr(QwenImage20Generator, 'MODELS'):
+        models = QwenImage20Generator.MODELS
+        if 'pro' in models and 'qwen-image-2.0-pro-2026-06-22' in models['pro']:
+            print(f"  ✅ QwenImage20Generator.MODELS['pro'] = {models['pro']}")
+        else:
+            print(f"  ❌ QwenImage20Generator.MODELS 缺少 pro 模型")
+            all_pass = False
+    else:
+        print(f"  ❌ QwenImage20Generator 缺少 MODELS")
+        all_pass = False
+    
     # 检查基类新特性
     from base_generator import BaseImageGenerator
     if hasattr(BaseImageGenerator, '_call_api_with_retry'):
@@ -300,6 +312,25 @@ def test_api_calls(test_image: str = None):
     else:
         print("\n  [2/7] wan img2img... 跳过 (无图片)")
         results.append(("wan img2img", None))
+    
+    # qwen-pro text2img
+    print("\n  [2.5/7] qwen-pro text2img...")
+    try:
+        gen = QwenImage20Generator(api_key=api_key)
+        r = gen.text_to_image("测试橘猫", model="pro", size="512", n=1, filename_prefix="test_qwenpro_t2i")
+        results.append(("qwen-pro text2img", r["success"]))
+        if r["success"]:
+            for sp in r["saved_paths"]:
+                sidecar = Path(sp).with_suffix('.json')
+                if sidecar.exists():
+                    print(f"    ✅ 生成成功 + sidecar 存在")
+                else:
+                    print(f"    ⚠️  生成成功但缺少 sidecar")
+        else:
+            print(f"    ❌ {r.get('error', 'unknown')}")
+    except Exception as e:
+        print(f"    ❌ {e}")
+        results.append(("qwen-pro text2img", False))
     
     # qwen text2img
     print("\n  [3/7] qwen text2img...")
