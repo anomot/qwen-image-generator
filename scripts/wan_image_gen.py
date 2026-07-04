@@ -78,7 +78,7 @@ class WanImageGenerator(BaseImageGenerator):
             if seed is not None:
                 call_kwargs["seed"] = seed
             
-            response = ImageGeneration.call(**call_kwargs)
+            response = self._call_api_with_retry(ImageGeneration.call, **call_kwargs)
             
             metadata = {
                 "model": model_name,
@@ -93,6 +93,7 @@ class WanImageGenerator(BaseImageGenerator):
             return self._process_response(response, "text2img", filename_prefix, metadata)
             
         except Exception as e:
+            self._stop_progress()
             print(f"❌ 生成失败: {e}")
             return {"success": False, "error": str(e)}
     
@@ -136,7 +137,7 @@ class WanImageGenerator(BaseImageGenerator):
             if seed is not None:
                 call_kwargs["seed"] = seed
             
-            response = ImageGeneration.call(**call_kwargs)
+            response = self._call_api_with_retry(ImageGeneration.call, **call_kwargs)
             
             metadata = {
                 "model": model_name,
@@ -151,6 +152,7 @@ class WanImageGenerator(BaseImageGenerator):
             return self._process_response(response, "img2img", filename_prefix, metadata)
             
         except Exception as e:
+            self._stop_progress()
             print(f"❌ 生成失败: {e}")
             return {"success": False, "error": str(e)}
     
@@ -203,7 +205,7 @@ class WanImageGenerator(BaseImageGenerator):
             if seed is not None:
                 call_kwargs["seed"] = seed
             
-            response = ImageGeneration.call(**call_kwargs)
+            response = self._call_api_with_retry(ImageGeneration.call, **call_kwargs)
             
             metadata = {
                 "model": model_name,
@@ -217,6 +219,7 @@ class WanImageGenerator(BaseImageGenerator):
             return self._process_response(response, "story", filename_prefix, metadata)
             
         except Exception as e:
+            self._stop_progress()
             print(f"❌ 生成失败: {e}")
             return {"success": False, "error": str(e)}
 

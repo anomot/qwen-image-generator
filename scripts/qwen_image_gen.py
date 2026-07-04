@@ -86,7 +86,7 @@ class QwenImage20Generator(BaseImageGenerator):
             if seed is not None:
                 call_kwargs["seed"] = seed
             
-            response = MultiModalConversation.call(**call_kwargs)
+            response = self._call_api_with_retry(MultiModalConversation.call, **call_kwargs)
             
             metadata = {
                 "model": model_name,
@@ -101,6 +101,7 @@ class QwenImage20Generator(BaseImageGenerator):
             return self._process_response(response, "text2img", filename_prefix, metadata)
             
         except Exception as e:
+            self._stop_progress()
             print(f"❌ 生成失败: {e}")
             return {"success": False, "error": str(e)}
     
@@ -148,7 +149,7 @@ class QwenImage20Generator(BaseImageGenerator):
             if seed is not None:
                 call_kwargs["seed"] = seed
             
-            response = MultiModalConversation.call(**call_kwargs)
+            response = self._call_api_with_retry(MultiModalConversation.call, **call_kwargs)
             
             metadata = {
                 "model": model_name,
@@ -163,6 +164,7 @@ class QwenImage20Generator(BaseImageGenerator):
             return self._process_response(response, "img2img", filename_prefix, metadata)
             
         except Exception as e:
+            self._stop_progress()
             print(f"❌ 生成失败: {e}")
             return {"success": False, "error": str(e)}
     
@@ -227,7 +229,7 @@ class QwenImage20Generator(BaseImageGenerator):
             if seed is not None:
                 call_kwargs["seed"] = seed
             
-            response = MultiModalConversation.call(**call_kwargs)
+            response = self._call_api_with_retry(MultiModalConversation.call, **call_kwargs)
             
             metadata = {
                 "model": model_name,
@@ -241,6 +243,7 @@ class QwenImage20Generator(BaseImageGenerator):
             return self._process_response(response, "multi", filename_prefix, metadata)
             
         except Exception as e:
+            self._stop_progress()
             print(f"❌ 生成失败: {e}")
             return {"success": False, "error": str(e)}
 

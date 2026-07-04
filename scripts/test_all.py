@@ -144,6 +144,32 @@ def test_method_signatures():
             print(f"  ❌ QwenImage20Generator.multi_image_fusion 参数不完整")
             all_pass = False
     
+    # 检查基类新特性
+    from base_generator import BaseImageGenerator
+    if hasattr(BaseImageGenerator, '_call_api_with_retry'):
+        print(f"  ✅ BaseImageGenerator._call_api_with_retry (API 重试)")
+    else:
+        print(f"  ❌ BaseImageGenerator 缺少 _call_api_with_retry")
+        all_pass = False
+    
+    if hasattr(BaseImageGenerator, '_verify_image'):
+        print(f"  ✅ BaseImageGenerator._verify_image (PIL 验证)")
+    else:
+        print(f"  ❌ BaseImageGenerator 缺少 _verify_image")
+        all_pass = False
+    
+    if hasattr(BaseImageGenerator, '_start_progress'):
+        print(f"  ✅ BaseImageGenerator._start_progress (进度心跳)")
+    else:
+        print(f"  ❌ BaseImageGenerator 缺少 _start_progress")
+        all_pass = False
+    
+    if hasattr(BaseImageGenerator, '_get_dated_output_dir'):
+        print(f"  ✅ BaseImageGenerator._get_dated_output_dir (日期分目录)")
+    else:
+        print(f"  ❌ BaseImageGenerator 缺少 _get_dated_output_dir")
+        all_pass = False
+    
     return all_pass
 
 
@@ -191,7 +217,15 @@ def test_instantiation():
     
     try:
         gen = WanImageGenerator(api_key=api_key)
-        print(f"  ✅ WanImageGenerator (output: {gen.output_dir})")
+        # 验证日期分目录
+        from datetime import datetime
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        if date_str in str(gen.output_dir):
+            print(f"  ✅ WanImageGenerator (output: {gen.output_dir})")
+            print(f"  ✅ 日期分目录生效 ({date_str})")
+        else:
+            print(f"  ⚠️  WanImageGenerator (output: {gen.output_dir})")
+            print(f"  ⚠️  日期分目录未生效? 期望包含 {date_str}")
     except Exception as e:
         print(f"  ❌ WanImageGenerator: {e}")
         return False
