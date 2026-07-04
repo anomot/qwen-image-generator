@@ -462,7 +462,7 @@ https://example.com/photo.jpg
 
 ### 坑 4：图片保存位置找不到
 
-**现状**：图片优先保存到当前工作目录的 `output/` 文件夹下。如果当前目录没有写权限，会保存到 Skill 的 `output/` 目录。
+**现状**：图片优先保存到当前工作目录的 `output/` 文件夹下。如果当前目录没有写权限（如系统根目录），会保存到 `~/Pictures/qwen-image-generator/`（macOS/Linux）或 `C:\Users\<用户名>\Pictures\qwen-image-generator\`（Windows）。
 
 **建议**：生成后注意看 Skill 输出的保存路径。
 
@@ -506,7 +506,7 @@ https://example.com/photo.jpg
 - z-image-turbo: 单次 1-4 张
 
 ### Q: 图片会保存多久？
-**A: 永久保存在本地。** API 返回的图片 URL 有时效性，但 Skill 会立即下载并保存到本地 `output/` 目录。
+**A: 永久保存在本地。** 优先保存到当前工作目录的 `output/` 下；如果不可写，保底保存到 `~/Pictures/qwen-image-generator/`。
 
 ### Q: 可以指定用中文还是英文提示词吗？
 **A: 不需要。** Skill 会根据模型自动转换：
