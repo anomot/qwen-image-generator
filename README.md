@@ -87,7 +87,7 @@ Agent 会自动检测你的操作系统并写入对应的配置文件。
 Skill 依赖以下 Python 包：
 
 ```
-dashscope, openai, requests, pillow
+dashscope, requests, pillow
 ```
 
 **正常情况下不需要你手动安装。** 当 Skill 首次触发时，Agent 会自动检测并安装缺失的依赖。
@@ -101,7 +101,8 @@ dashscope, openai, requests, pillow
 或者自己执行：
 
 ```bash
-pip install dashscope openai requests pillow
+pip install -r requirements.txt
+# 或手动安装：pip install dashscope requests pillow
 ```
 
 ### 3. 验证
