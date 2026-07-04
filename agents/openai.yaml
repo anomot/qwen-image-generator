@@ -1,0 +1,4 @@
+interface:
+  display_name: "通义生图助手"
+  short_description: "智能 AI 生图，支持 wan2.7、qwen-image-2.0、z-image-turbo 三个模型"
+  default_prompt: "帮我生成一张图片"
