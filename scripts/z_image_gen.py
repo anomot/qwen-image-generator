@@ -55,7 +55,7 @@ class ZImageTurboGenerator(BaseImageGenerator):
     ) -> dict:
         """文生图：根据文本描述生成图片"""
         model_name = self.MODELS.get(model, model)
-        size_value = self.SIZES.get(size, size)
+        size_value = self._validate_resolution(size, "z-image")
         
         messages = [{
             "role": "user",

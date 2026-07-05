@@ -118,6 +118,60 @@ class BaseImageGenerator:
             return None
         return cleaned
     
+
+    def _validate_resolution(self, size: str, model_type: str) -> str:
+        """
+        验证分辨率是否在总像素范围内
+        
+        Args:
+            size: 尺寸字符串，可以是预定义别名或 "宽*高" 格式
+            model_type: 模型类型 ("qwen", "wan", "z-image")
+        
+        Returns:
+            验证后的尺寸字符串，如果无效则返回默认值
+        
+        总像素限制：
+        - qwen-image-2.0: [512*512, 2048*2048] = [262144, 4194304]
+        - wan2.7: [768*768, 2048*2048] = [589824, 4194304]，宽高比 [1:8, 8:1]
+        - z-image-turbo: [512*512, 2048*2048] = [262144, 4194304]
+        """
+        # 如果是预定义别名，直接返回（已经在 SIZES 中验证过）
+        if size in self.SIZES:
+            return self.SIZES[size]
+        
+        # 尝试解析 "宽*高" 格式
+        if '*' in size:
+            try:
+                parts = size.split('*')
+                width, height = int(parts[0]), int(parts[1])
+                total_pixels = width * height
+                
+                # 根据模型类型设置限制
+                if model_type == "qwen":
+                    min_pixels, max_pixels = 512*512, 2048*2048
+                elif model_type == "wan":
+                    min_pixels, max_pixels = 768*768, 2048*2048
+                    # 宽高比限制
+                    aspect_ratio = width / height
+                    if aspect_ratio < 1/8 or aspect_ratio > 8:
+                        print(f"⚠️  宽高比 {aspect_ratio:.2f} 超出范围 [1:8, 8:1]，使用默认尺寸")
+                        return self.SIZES.get("1k", "1024*1024")
+                else:  # z-image
+                    min_pixels, max_pixels = 512*512, 2048*2048
+                
+                if total_pixels < min_pixels or total_pixels > max_pixels:
+                    print(f"⚠️  总像素 {total_pixels:,} 超出范围 [{min_pixels:,}, {max_pixels:,}]，使用默认尺寸")
+                    return self.SIZES.get("1k", "1024*1024")
+                
+                return size
+            except (ValueError, IndexError, ZeroDivisionError):
+                print(f"⚠️  无法解析尺寸 '{size}'，使用默认尺寸")
+                return self.SIZES.get("1k", "1024*1024")
+        
+        # 无法识别，返回默认值
+        print(f"⚠️  未知尺寸 '{size}'，使用默认尺寸")
+        return self.SIZES.get("1k", "1024*1024")
+
     def _prepare_image(self, image_path: str) -> str:
         """
         读取本地图片或 URL，返回 base64 data URI

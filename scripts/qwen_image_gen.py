@@ -123,7 +123,7 @@ class QwenImage20Generator(BaseImageGenerator):
     ) -> dict:
         """图生图：基于输入图片和文本描述生成新图片"""
         model_name = self.MODELS.get(model, model)
-        size_value = self.SIZES.get(size, size)
+        size_value = self._validate_resolution(size, "qwen")
         
         image_url = self._prepare_image(image_path)
         messages = [{
