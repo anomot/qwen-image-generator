@@ -337,7 +337,8 @@ def main():
             negative_prompt=args.negative_prompt,
             seed=args.seed,
             watermark=args.watermark,
-            filename_prefix=prefix
+            filename_prefix=prefix,
+            focal_point=args.focal_point
         )
     elif args.command == "img2img":
         result = generator.image_to_image(
