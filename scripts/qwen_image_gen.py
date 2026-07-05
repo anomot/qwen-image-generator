@@ -57,7 +57,7 @@ class QwenImage20Generator(BaseImageGenerator):
         prompt: str,
         model: str = "default",
         n: int = 1,
-        size: str = "1k",
+        size: str = "2k",
         watermark: bool = False,
         negative_prompt: Optional[str] = None,
         seed: Optional[int] = None,
@@ -116,7 +116,7 @@ class QwenImage20Generator(BaseImageGenerator):
         image_path: str,
         model: str = "default",
         n: int = 1,
-        size: str = "1k",
+        size: str = "2k",
         negative_prompt: Optional[str] = None,
         seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
@@ -179,7 +179,7 @@ class QwenImage20Generator(BaseImageGenerator):
         image_path: str,
         model: str = "default",
         n: int = 1,
-        size: str = "1k",
+        size: str = "2k",
         negative_prompt: Optional[str] = None,
         seed: Optional[int] = None,
         filename_prefix: Optional[str] = None
@@ -264,7 +264,7 @@ def main():
     p_t2i = subparsers.add_parser("text2img", help="文生图")
     p_t2i.add_argument("prompt", help="提示词")
     p_t2i.add_argument("--n", type=int, default=1, help="生成数量 1-6 (默认: 1)")
-    p_t2i.add_argument("--size", default="1k", help="尺寸: 2k/1k/512/portrait/landscape/square (默认: 1k)")
+    p_t2i.add_argument("--size", default="2k", help="尺寸: 2k/1k/512/portrait/landscape/square (默认: 2k)")
     p_t2i.add_argument("--negative-prompt", default=None, help="负向提示词")
     p_t2i.add_argument("--seed", type=int, default=None, help="随机种子")
     p_t2i.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版 (默认: default)")
@@ -277,7 +277,7 @@ def main():
     p_i2i.add_argument("image", help="输入图片路径或URL")
     p_i2i.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版")
     p_i2i.add_argument("--n", type=int, default=1)
-    p_i2i.add_argument("--size", default="1k")
+    p_i2i.add_argument("--size", default="2k")
     p_i2i.add_argument("--negative-prompt", default=None)
     p_i2i.add_argument("--seed", type=int, default=None)
     p_i2i.add_argument("--filename-prefix", default=None)
@@ -288,7 +288,7 @@ def main():
     p_edit.add_argument("image", help="输入图片路径或URL")
     p_edit.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版")
     p_edit.add_argument("--n", type=int, default=1)
-    p_edit.add_argument("--size", default="1k")
+    p_edit.add_argument("--size", default="2k")
     p_edit.add_argument("--negative-prompt", default=None)
     p_edit.add_argument("--seed", type=int, default=None)
     p_edit.add_argument("--filename-prefix", default=None)
@@ -299,7 +299,7 @@ def main():
     p_multi.add_argument("images", nargs="+", help="输入图片路径或URL（至少2张）")
     p_multi.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版")
     p_multi.add_argument("--n", type=int, default=1)
-    p_multi.add_argument("--size", default="1k")
+    p_multi.add_argument("--size", default="2k")
     p_multi.add_argument("--seed", type=int, default=None)
     p_multi.add_argument("--filename-prefix", default=None)
     
