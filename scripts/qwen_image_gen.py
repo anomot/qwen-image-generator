@@ -61,7 +61,8 @@ class QwenImage20Generator(BaseImageGenerator):
         watermark: bool = False,
         negative_prompt: Optional[str] = None,
         seed: Optional[int] = None,
-        filename_prefix: Optional[str] = None
+        filename_prefix: Optional[str] = None,
+        focal_point: Optional[str] = None
     ) -> dict:
         """文生图：根据文本描述生成图片"""
         model_name = self.MODELS.get(model, model)
@@ -102,6 +103,8 @@ class QwenImage20Generator(BaseImageGenerator):
                 "negative_prompt": negative_prompt,
                 "extra_params": {"watermark": watermark}
             }
+            if focal_point:
+                metadata["extra_params"]["focal_point"] = focal_point
             
             return self._process_response(response, "text2img", filename_prefix, metadata)
             
@@ -119,7 +122,8 @@ class QwenImage20Generator(BaseImageGenerator):
         size: str = "2k",
         negative_prompt: Optional[str] = None,
         seed: Optional[int] = None,
-        filename_prefix: Optional[str] = None
+        filename_prefix: Optional[str] = None,
+        focal_point: Optional[str] = None
     ) -> dict:
         """图生图：基于输入图片和文本描述生成新图片"""
         model_name = self.MODELS.get(model, model)
@@ -165,6 +169,8 @@ class QwenImage20Generator(BaseImageGenerator):
                 "negative_prompt": negative_prompt,
                 "extra_params": {"input_image": image_path}
             }
+            if focal_point:
+                metadata["extra_params"]["focal_point"] = focal_point
             
             return self._process_response(response, "img2img", filename_prefix, metadata)
             
@@ -182,14 +188,16 @@ class QwenImage20Generator(BaseImageGenerator):
         size: str = "2k",
         negative_prompt: Optional[str] = None,
         seed: Optional[int] = None,
-        filename_prefix: Optional[str] = None
+        filename_prefix: Optional[str] = None,
+        focal_point: Optional[str] = None
     ) -> dict:
         """图片编辑：对输入图片进行编辑修改"""
         return self.image_to_image(
             prompt, image_path, model=model, n=n, size=size,
             negative_prompt=negative_prompt,
             seed=seed,
-            filename_prefix=filename_prefix
+            filename_prefix=filename_prefix,
+            focal_point=focal_point
         )
     
     def multi_image_fusion(
@@ -200,7 +208,8 @@ class QwenImage20Generator(BaseImageGenerator):
         n: int = 1,
         size: str = "2k",
         seed: Optional[int] = None,
-        filename_prefix: Optional[str] = None
+        filename_prefix: Optional[str] = None,
+        focal_point: Optional[str] = None
     ) -> dict:
         """多图融合：将多张图片融合为一张"""
         model_name = self.MODELS.get(model, model)
@@ -244,6 +253,8 @@ class QwenImage20Generator(BaseImageGenerator):
                 "seed": seed,
                 "extra_params": {"input_images": image_paths}
             }
+            if focal_point:
+                metadata["extra_params"]["focal_point"] = focal_point
             
             return self._process_response(response, "multi", filename_prefix, metadata)
             
@@ -270,6 +281,7 @@ def main():
     p_t2i.add_argument("--model", default="default", choices=["default", "pro"], help="模型: default=加速版, pro=满血版 (默认: default)")
     p_t2i.add_argument("--watermark", action="store_true", help="添加水印（默认关闭）")
     p_t2i.add_argument("--filename-prefix", default=None, help="文件名前缀（如：春日海报_花朵）")
+    p_t2i.add_argument("--focal-point", default=None, help="视觉锚点描述（如：女孩为视觉焦点，果酒中景，海面虚化）")
     
     # img2img
     p_i2i = subparsers.add_parser("img2img", help="图生图")
@@ -281,6 +293,7 @@ def main():
     p_i2i.add_argument("--negative-prompt", default=None)
     p_i2i.add_argument("--seed", type=int, default=None)
     p_i2i.add_argument("--filename-prefix", default=None)
+    p_i2i.add_argument("--focal-point", default=None, help="视觉锚点描述")
     
     # edit
     p_edit = subparsers.add_parser("edit", help="图片编辑")
@@ -292,6 +305,7 @@ def main():
     p_edit.add_argument("--negative-prompt", default=None)
     p_edit.add_argument("--seed", type=int, default=None)
     p_edit.add_argument("--filename-prefix", default=None)
+    p_edit.add_argument("--focal-point", default=None, help="视觉锚点描述")
     
     # multi
     p_multi = subparsers.add_parser("multi", help="多图融合")
@@ -302,6 +316,7 @@ def main():
     p_multi.add_argument("--size", default="2k")
     p_multi.add_argument("--seed", type=int, default=None)
     p_multi.add_argument("--filename-prefix", default=None)
+    p_multi.add_argument("--focal-point", default=None, help="视觉锚点描述")
     
     args = parser.parse_args()
     if not args.command:
@@ -329,14 +344,16 @@ def main():
             args.prompt, args.image, model=args.model, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
             seed=args.seed,
-            filename_prefix=prefix
+            filename_prefix=prefix,
+            focal_point=args.focal_point
         )
     elif args.command == "edit":
         result = generator.edit_image(
             args.prompt, args.image, model=args.model, n=args.n, size=args.size,
             negative_prompt=args.negative_prompt,
             seed=args.seed,
-            filename_prefix=prefix
+            filename_prefix=prefix,
+            focal_point=args.focal_point
         )
     elif args.command == "multi":
         if len(args.images) < 2:
@@ -345,7 +362,8 @@ def main():
         result = generator.multi_image_fusion(
             args.prompt, args.images, model=args.model, n=args.n, size=args.size,
             seed=args.seed,
-            filename_prefix=prefix
+            filename_prefix=prefix,
+            focal_point=args.focal_point
         )
     else:
         parser.print_help()

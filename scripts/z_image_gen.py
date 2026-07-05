@@ -51,7 +51,8 @@ class ZImageTurboGenerator(BaseImageGenerator):
         prompt_extend: bool = False,
         negative_prompt: Optional[str] = None,
         seed: Optional[int] = None,
-        filename_prefix: Optional[str] = None
+        filename_prefix: Optional[str] = None,
+        focal_point: Optional[str] = None
     ) -> dict:
         """文生图：根据文本描述生成图片"""
         model_name = self.MODELS.get(model, model)
@@ -93,6 +94,8 @@ class ZImageTurboGenerator(BaseImageGenerator):
                 "negative_prompt": negative_prompt,
                 "extra_params": {"prompt_extend": prompt_extend}
             }
+            if focal_point:
+                metadata["extra_params"]["focal_point"] = focal_point
             
             return self._process_response(response, "text2img", filename_prefix, metadata)
             
@@ -118,6 +121,7 @@ def main():
     p_t2i.add_argument("--seed", type=int, default=None, help="随机种子")
     p_t2i.add_argument("--prompt-extend", action="store_true", help="启用提示词扩展")
     p_t2i.add_argument("--filename-prefix", default=None, help="文件名前缀")
+    p_t2i.add_argument("--focal-point", default=None, help="视觉锚点描述")
     
     # img2img (not supported)
     p_i2i = subparsers.add_parser("img2img", help="图生图（不支持）")
@@ -153,7 +157,8 @@ def main():
             negative_prompt=args.negative_prompt,
             seed=args.seed,
             prompt_extend=args.prompt_extend,
-            filename_prefix=prefix
+            filename_prefix=prefix,
+            focal_point=args.focal_point
         )
     else:
         parser.print_help()
